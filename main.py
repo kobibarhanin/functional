@@ -3,28 +3,34 @@
 # ===================================================
 
 # TODO: 
-# - execution conditionals
+# - execution conditionals (with try catch in decorator?)
+# - inter function contracts
 # - add error handling support
 
 
-class exnf:
+class exf:
+    """
+    execution function type (factory) class
+    """
     def __init__(self, function) -> None:
         self.function = function
     
     def __rshift__(self, tree): 
-        instance = exn(self.function)       
+        instance = exfi(self.function)       
         if type(tree) is not list:
             tree = [tree]
         for node in tree:
-            if type(node) is exnf:
-                instance.tree.append(exn(node.function))
+            if type(node) is exf:
+                instance.tree.append(exfi(node.function))
             else:
                 instance.tree.append(node)
         return instance
 
 
-class exn:
-    
+class exfi:
+    """
+    execution function instance class
+    """
     def __init__(self, function) -> None:
         self.function = function
         self.name = function.__name__
@@ -34,7 +40,10 @@ class exn:
         kwargs.update({'name': self.function.__name__})
         rv = self.function(**kwargs)
         for node in self.tree:
-            node.execute(**rv)
+            try:
+                node.execute(**rv)
+            except Exception:
+                continue
             
     
 def _root(**kwargs):
@@ -50,23 +59,26 @@ def _B(**kwargs):
     return {'parent': 'B', 'depth': kwargs.get('depth')+1}
 
 def _C(**kwargs):
+    raise Exception('bla')
     print(kwargs)
     return {'parent': 'C', 'depth': kwargs.get('depth')+1, 'onlyd':'some_value'}
 
 def _D(**kwargs):
+    # raise Exception('bla')
     print(kwargs)
     if kwargs['parent'] == 'C':
         print (kwargs['onlyd'])
     return {'parent': 'D', 'depth': kwargs.get('depth')+1}
 
 
-root = exnf(_root)
-A = exnf(_A)
-B = exnf(_B)
-C = exnf(_C)
-D = exnf(_D)
+root = exf(_root)
+A = exf(_A)
+B = exf(_B)
+C = exf(_C)
+D = exf(_D)
 
 
+# define and execute the functional schema
 (root >> 
     [
         A >> 
