@@ -37,7 +37,7 @@ class exfi:
         self.tree = []
 
     def execute(self, **kwargs):
-        kwargs.update({'name': self.function.__name__})
+        kwargs.update({'function': self.function.__name__})
         rv = self.function(**kwargs)
         for node in self.tree:
             try:
@@ -59,7 +59,7 @@ def _B(**kwargs):
     return {'parent': 'B', 'depth': kwargs.get('depth')+1}
 
 def _C(**kwargs):
-    raise Exception('bla')
+    # raise Exception('bla')
     print(kwargs)
     return {'parent': 'C', 'depth': kwargs.get('depth')+1, 'onlyd':'some_value'}
 
@@ -91,3 +91,9 @@ D = exf(_D)
         A >> C
     ]
 ).execute(**{'parent': None, 'depth': 0})
+
+# (root >> (A >> B)).execute(**{'parent': None, 'depth': 0})
+# (root >> (A >> (B >> (C >> D)))).execute(**{'parent': None, 'depth': 0})
+
+# This will not work due to type issues [ exfi >> exf]
+# (root >> A >> B).execute(**{'parent': None, 'depth': 0})
